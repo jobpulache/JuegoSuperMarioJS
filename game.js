@@ -75,10 +75,18 @@ function create(){
     this.mario = this.physics.add.sprite(50,100, 'mario')
     .setOrigin(0,1)
     .setCollideWorldBounds(true)//Evitamos que mario salga de su mundillo
-    .setGravityY(300)//Podemos modificar la gravedad que viene por default
+    .setGravityY(300)//Podemos modificar la gravedad que viene por default - mientras mas gravedad mas le cuesta saltar
+
+    //Punto inicial y punto final de cuáles serían los limites de nuestro mundo
+    this.physics.world.setBounds(0,0, 2000, config.height)//El mundo va mas allá y va terminar 2000px haciaa la derecha
 
    //agregamos colisión de mario con el suelo para que no caiga
    this.physics.add.collider(this.mario, this.floor)
+   //add limites de la camara
+   this.cameras.main.setBounds(0,0, 2000, config.height)//Va  a tener lo mismo
+   //Cuando se mueve la camara-tiene que seguir al mario
+   this.cameras.main.startFollow(this.mario)//Hacemos que siga al mario
+
 
     //Creamos las animaciones
 this.anims.create({
