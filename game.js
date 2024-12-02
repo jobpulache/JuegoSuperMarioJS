@@ -1,3 +1,5 @@
+import { createAnimations } from "./animation.js"
+
 //Global phaser
 const config ={
 type: Phaser.AUTO,
@@ -34,6 +36,8 @@ this.load.spritesheet('mario', //Esta es la id, tiene que ser unico
 this.load.image('floorbricks',
     'assets/scenery/overworld/floorbricks.png'
 )
+this.load.audio('gameover', 'assets/sound/music/gameover.mp3')//Add audio when head
+
 
 
 
@@ -82,35 +86,14 @@ function create(){
 
    //agregamos colisión de mario con el suelo para que no caiga
    this.physics.add.collider(this.mario, this.floor)
-   //add limites de la camara
+   //add limites de la camera
    this.cameras.main.setBounds(0,0, 2000, config.height)//Va  a tener lo mismo
    //Cuando se mueve la camara-tiene que seguir al mario
    this.cameras.main.startFollow(this.mario)//Hacemos que siga al mario
 
 
-    //Creamos las animaciones
-this.anims.create({
-    key: 'mario-walk',
-    //creamoa frames - Le decimos cuál es el spriteSheet que queremos utiliar
-    frames: this.anims.generateFrameNumbers('mario',//Del mario quiero que me crees una animación que vaya desde el frame de  " " a ...
-        {start: 3, end: 2}
-    ),
-     frameRate: 12,//Es la velocidad a la  que se va a realizar la animación
-    //Le decimos cuantas veces se tiene que repetir
-    repeat: -1// Infinito
-})
-//Creo otra animación para cuando mario no esta haciendo nada 
-this.anims.create({
-    key: 'mario-idle',
-    frames: [{key: 'mario',frame:0}]//Del spriteMARIO utiliza el frame 0
-})
-//Animation for jump
-this.anims.create({
-    key:'mario-jump',
-    frames: this.anims.generateFrameNumbers('mario',
-        {start: 2, end: 5}
-    )
-})
+ createAnimations(this)
+
 
     //Movimiento del mario. COn las llaves
     this.keys = this.input.keyboard.createCursorKeys()// createCursorKeys este es ubn metodo que lo que va a ser es poder visualizar las teclas en la funcion Update  
@@ -118,6 +101,8 @@ this.anims.create({
 }//then
 
 function update(){//execute continuously(continuamente)- en bucle infinito
+    if(this.mario.isDead)
+        return
     //Ahora dentro de update vamos a tener acceso 
     if(this.keys.left.isDown){//Si la tecla de la izquierda se esta presionando
     this.mario.x-=2//Movemos el mario en eje X-2
@@ -136,6 +121,19 @@ function update(){//execute continuously(continuamente)- en bucle infinito
     if(this.keys.up.isDown && this.mario.body.touching.down){//vemosque el mario(elemento)esta tocando por abajo
         this.mario.setVelocityY(-300)//Velocidad del salto
         this.mario.anims.play('mario-jump', true)//Animation jump
+    }
+    if(this.mario.y >= config.height){//Mayor o igual a 
+        this.mario.isDead =true//Le decimo que el mario a muerto
+        this.mario.anims.play('mario-dead')
+        this.mario.setCollideWorldBounds(false)//Cuando  muere desactivamos los limites de nuestro mundo
+        this.sound.add('gameover', {volume: 0.6}).play()//Cuando muere mario se suene this audio-le ajustamos el volumen del audio
+
+        setTimeout(() => {
+            this.mario.setVelocityY(-350)
+        }, 100);//Cuando pasen 100ms vaya hacía arriba
+        setTimeout(() => {
+            this.scene.restart()
+        }, 2000);
     }
 
 }
